@@ -1,4 +1,4 @@
-import React, { useState, useReducer } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
@@ -6,7 +6,7 @@ import Button from '../UI/Button/Button';
 
 const mailReducer = (state, action) => {
   if (action.type === 'USER_ENTERD_MAIL') {
-    return {val: action.val};
+    return {val: action.val, isValid: action.val.includes('@')};
   }
   if (action.type === 'EMAIL_IS_VALID') {
     console.log('asdfasdfas', state.val)
@@ -17,10 +17,10 @@ const mailReducer = (state, action) => {
 
 const passwordReducer = (state, action) => {
   if (action.type === 'USER_ENTERD_PASSWORD') {
-    return {val: action.val};
+    return {val: action.val, isValid: state.val.trim().length>6};
   }
   if (action.type === 'PASSWORD_BLUR') {
-    return {val: state.val, isValid: state.val.trim()>6};
+    return {val: state.val, isValid: state.val.trim().length>6};
   };
   return {val: '', isValid: false};
 };
@@ -36,37 +36,40 @@ const Login = (props) => {
   const [emailState, dispatchEmail] = useReducer(mailReducer, {val: '', isValid: null});
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {val: '', isValid: null});
 
-  // useEffect(()=>{
-  //   const timer = setTimeout(()=>{
-  //     console.log('set time out');
-  //     setFormIsValid(
-  //       enteredEmail.includes('@') && enteredPassword.trim().length > 6
-  //     );
-  //   }, 500);
+  const {isValid: mailValidity} = emailState;
+  const {isValid: passwordValidity} = passwordState
 
-  //   return ()=>{
-  //     clearTimeout(timer);
-  //   };
+  useEffect(()=>{
+    const timer = setTimeout(()=>{
+      console.log('set time out');
+      setFormIsValid(
+        mailValidity && passwordValidity
+      );
+    }, 500);
+
+    return ()=>{
+      clearTimeout(timer);
+    };
     
-  // }, [enteredEmail, enteredPassword]);
+  }, [mailValidity, passwordValidity]);
 
   const emailChangeHandler = (event) => {
     // setEnteredEmail(event.target.value);
     dispatchEmail({type: 'USER_ENTERD_MAIL', val: event.target.value});
 
-    setFormIsValid(
-      event.target.value.includes('@') && passwordState.val.trim().length > 6
-    );
+    // setFormIsValid(
+    //   event.target.value.includes('@') && passwordState.isValid
+    // );
   };
 
   const passwordChangeHandler = (event) => {
     // setEnteredPassword(event.target.value);
     dispatchPassword({type: 'USER_ENTERD_PASSWORD', val: event.target.value});
 
-    setFormIsValid(
-      // event.target.value.trim().length > 6 && enteredEmail.includes('@')
-      event.target.value.trim().length > 6 && emailState.isValid
-    );
+    // setFormIsValid(
+    //   // event.target.value.trim().length > 6 && enteredEmail.includes('@')
+    //   event.target.value.trim().length > 6 && emailState.isValid
+    // );
   };
 
   const validateEmailHandler = () => {
